@@ -302,6 +302,8 @@ void removeFile(string input){
 
                     lineIndex = stoi(aux);
 
+                    cout << "lineIndex => " << lineIndex << '\n';
+
                     break;
                 }
             }
@@ -311,13 +313,14 @@ void removeFile(string input){
     if(fileExists){
         cout<<"calling removeFileContent(lineIndex)"<<'\n';
         removeFileContent(lineIndex);
+        saveMemDir();
     } else {
         cout << "O arquivo nao foi encontrado!" << '\n';
     }
 }
 
 void removeFileContent(int contentIndex){
-        
+    
     if(contentIndex == 0){
 
         memDir[contentIndex][0] = '0';
