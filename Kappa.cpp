@@ -61,71 +61,46 @@ int main() {
 	}
 }
 
-// void showDir(){
-
-//     for(int i = 0; i < 20; i++){
-//         if(memDir[i][7] == cfolderCurrent[0]){
-
-//             string aux;
- 
-//             int j = 16;
- 
-//             while(memDir[i][j] != ' ' && j < 32){
-               	
-// 				aux.push_back(memDir[i][j]);
-			
-// 				j++;
-//             }
-
-//             if (memDir[i][2] == '1')
-//             {
-//                 cout << aux << endl;
-//             } else if (memDir[i][2] == '0'){
-//                 string aux2;
-//                 for (j = 12; j < 16 ; j++){
-//                     aux2.push_back(memDir[i][j]);
-//                 }
-
-//                 cout << aux << ' ' << stoi(aux2) << " Bytes"<<'\n';
-
-//             }
-//         }
-//     }
-// }
-
 void showDir(){
     for(int i = 0; i < 20; i++){
 
         string sIndex;
 
-        for (int k = 4; k < 8; k++)
-        {
-            sIndex.push_back(memDir[i][k]);
-        }
-        
-        if(stoi(sIndex) == dirStack.back()){
+        for (int k = 4; k < 8; k++){
+            if(memDir[i][k] != ' '){
+            
+                sIndex.push_back(memDir[i][k]);
 
-            string aux;
- 
-            int j = 16;
- 
-            while(memDir[i][j] != ' ' && j < 32){
-               	
-				aux.push_back(memDir[i][j]);
-			
-				j++;
+            } else {
+                break;
             }
+        }
 
-            if (memDir[i][2] == '1'){
-                cout << aux << endl;
-            } else if (memDir[i][2] == '0'){
-                string aux2;
-                for (j = 12; j < 16 ; j++){
-                    aux2.push_back(memDir[i][j]);
+        if (!sIndex.empty()){
+            if(stoi(sIndex) == dirStack.back()){
+
+                string aux;
+    
+                int j = 16;
+    
+                while(memDir[i][j] != ' ' && j < 32){
+                    
+                    aux.push_back(memDir[i][j]);
+                
+                    j++;
                 }
 
-                cout << aux << "    " << stoi(aux2) << " Bytes"<<'\n';
+                if (memDir[i][2] == '1'){
+                    cout << aux << endl;
+                } else if (memDir[i][2] == '0'){
+                    string aux2;
+                    for (j = 12; j < 16 ; j++){
+                        aux2.push_back(memDir[i][j]);
+                    }
 
+                    cout << aux << "    " << stoi(aux2) << " Bytes"<<'\n';
+
+                }
             }
         }
     }
