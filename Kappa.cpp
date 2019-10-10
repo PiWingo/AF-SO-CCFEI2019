@@ -30,6 +30,7 @@ void mkDir(string input);
 void changeDir(string input);
 void mountDirPointer(int pathIndex);
 void backDir();
+void showDir();
 
 // ---------------
 
@@ -54,12 +55,85 @@ int main() {
 			mkDir(input);
 		} else if(input.find("cd ") == 0){
 			changeDir(input);
+		} else if(input.find("dir") == 0){
+			showDir();
 		}
 	}
 }
 
+// void showDir(){
+
+//     for(int i = 0; i < 20; i++){
+//         if(memDir[i][7] == cfolderCurrent[0]){
+
+//             string aux;
+ 
+//             int j = 16;
+ 
+//             while(memDir[i][j] != ' ' && j < 32){
+               	
+// 				aux.push_back(memDir[i][j]);
+			
+// 				j++;
+//             }
+
+//             if (memDir[i][2] == '1')
+//             {
+//                 cout << aux << endl;
+//             } else if (memDir[i][2] == '0'){
+//                 string aux2;
+//                 for (j = 12; j < 16 ; j++){
+//                     aux2.push_back(memDir[i][j]);
+//                 }
+
+//                 cout << aux << ' ' << stoi(aux2) << " Bytes"<<'\n';
+
+//             }
+//         }
+//     }
+// }
+
+void showDir(){
+    for(int i = 0; i < 20; i++){
+
+        string sIndex;
+
+        for (int k = 4; k < 8; k++)
+        {
+            sIndex.push_back(memDir[i][k]);
+        }
+        
+        if(stoi(sIndex) == dirStack.back()){
+
+            string aux;
+ 
+            int j = 16;
+ 
+            while(memDir[i][j] != ' ' && j < 32){
+               	
+				aux.push_back(memDir[i][j]);
+			
+				j++;
+            }
+
+            if (memDir[i][2] == '1'){
+                cout << aux << endl;
+            } else if (memDir[i][2] == '0'){
+                string aux2;
+                for (j = 12; j < 16 ; j++){
+                    aux2.push_back(memDir[i][j]);
+                }
+
+                cout << aux << "    " << stoi(aux2) << " Bytes"<<'\n';
+
+            }
+        }
+    }
+}
+
 void backDir(){
-    
+    dirStack.pop_back();
+    mountDirPointer(dirStack.back());
 }
 
 void mkDir(string input){
