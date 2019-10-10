@@ -1,4 +1,5 @@
 #include <set>
+#include <vector>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -6,15 +7,16 @@
 using namespace std;
 
 // --------------- global vars
-
+string currHDName;
 string currDir = "# ";
 fstream dir;
 char memDir[1024][33];
+vector<int> dirStack{0};
 
 // --------------- functions declarations
 
 void createhd(string input);
-void openDir(string input);
+void openHD(string input);
 void rootDir();
 void create(string input);
 void createHDFile();
@@ -24,6 +26,9 @@ int nextLine();
 void saveMemDir();
 void removeFile(string input);
 void removeFileContent(int contentIndex);
+void mkDir(string input);
+void changeDir(string input);
+void mountDirPointer(int pathIndex);
 
 // ---------------
 
@@ -38,20 +43,157 @@ int main() {
 			createhd(input);
 		} else if(input.find("create ") == 0){
 			create(input);
-		} else if(input.find("cd ..") == 0){
+		} else if(input.find("cd /") == 0){
 			rootDir();
 		} else if(input.find("selecthd ") == 0){
-			openDir(input);
+			openHD(input);
 		} else if(input.find("remove ") == 0){
             removeFile(input);
-        }
+        } else if(input.find("mkdir ") == 0){
+			mkDir(input);
+		} else if(input.find("cd ") == 0){
+			changeDir(input);
+		}
 	}
+}
+
+void mkDir(string input){
+
+	string name = input.replace(0, 6, "");
+
+	int currDirIndex = dirStack.size()-1;
+
+	int hdSlot = nextHDSlot();
+
+	memDir[hdSlot][0] = '1';
+
+    memDir[hdSlot][2] = '1';
+
+	for(int j = 8; j < 16; j++){
+		memDir[hdSlot][j] = '0';
+	}
+
+	string sIndex = to_string(dirStack.at(currDirIndex));
+
+	int sSize = sIndex.size();
+	
+	int temp = 0;
+
+	for(int j = 4 + (4 - sSize); j < 8; j++){
+		if( temp < sSize){
+			memDir[hdSlot][j] = sIndex.at(temp);
+			temp++;
+		} else {
+			break;
+		}
+	}
+	
+	for(int j = 7 - sSize; j >= 4 ; j--){
+		memDir[hdSlot][j] = '0';
+	}
+
+	int fNameSize = name.size();
+
+    temp = 0;
+
+    for(int j = 16; j < 32; j++){
+        if(temp < fNameSize){
+            memDir[hdSlot][j] = name.at(temp);
+            temp++;
+        } else {
+			break;
+		}
+    }
+
+	cout << "Pasta " << name << " criada" << '\n';
+	saveMemDir();
+}
+
+void changeDir(string input){
+
+	string name = input.replace(0, 3, "");
+
+	for(int i = 0; i < 20; i++){
+        if(memDir[i][0] == '1' && memDir[i][2] == '1'){
+            
+            string aux;
+
+            int j = 16;
+
+            while(memDir[i][j] != ' ' && j < 32){
+
+                aux.push_back(memDir[i][j]);
+
+                j++;
+
+            }
+
+            if(aux.size() > 0){
+                if(name.compare(aux) == 0){
+
+					dirStack.push_back(i);
+
+                    mountDirPointer(i);
+
+                }
+            }
+        }
+    }
+}
+
+void mountDirPointer(int pathIndex){
+    static int aux = dirStack.size() - 1;
+    static vector<string> allDirs;
+
+    if(pathIndex == 0){
+
+        string dirPointer = "# ";
+
+        allDirs.push_back(currHDName);
+
+        for (int i = allDirs.size()-1; i >= 0; i--) {
+            dirPointer += allDirs.at(i) + '\\';
+        }
+        
+        dirPointer += "> ";
+
+        currDir = dirPointer;
+
+        allDirs.clear();
+
+    } else {
+
+        string auxString;
+
+        int k = 16;
+
+        while(memDir[pathIndex][k] != ' ' && k < 32){
+
+            auxString.push_back(memDir[pathIndex][k]);
+
+            k++;
+
+        }
+
+        allDirs.push_back(auxString);
+
+        auxString.clear();
+
+        for(int j = 4; j < 8; j++){
+            auxString.push_back(memDir[pathIndex][j]);
+        }
+
+        int nextPathIndex = stoi(auxString);
+
+        mountDirPointer(nextPathIndex);
+    }
 }
 
 void createhd(string input){
 
 	string name = input.replace(0, 9, "");
-    currDir = "# " + name + ":\\> ";
+    currHDName = name;
+    currDir = "# " + name + "\\> ";
     string temp = "fsutil file createnew " + name + ".txt 33792";
     system(temp.c_str());
 
@@ -61,7 +203,7 @@ void createhd(string input){
     createHDFile();
 }
 
-void openDir(string input){
+void openHD(string input){
     string name = input.replace(0, 8, "");
     string temp = name + ".txt";
     currDir = "# " + name + ":\\> ";
@@ -120,9 +262,24 @@ void saveFile(string filename, string fileContent){
 
 	memDir[freeHDSlot][2] = '0';
 
-    for(int j = 4; j < 8; j++){
-        memDir[freeHDSlot][j] = '0'; // might change later
+    string dirAux = to_string(dirStack.back());
+
+    int dirAuxSize = dirAux.size();
+
+    for(int j = 4 + (4 - dirAuxSize); j < 8; j++){
+    	if( aux < dirAuxSize){
+    		memDir[freeHDSlot][j] = dirAux.at(aux);
+    		aux++;
+		} else {
+			break;
+		}
     }
+    
+    for(int j = 7 - dirAuxSize; j >= 4 ; j--){
+    	memDir[freeHDSlot][j] = '0';
+	}
+
+    aux = 0;
 
     string sHDIndex = to_string(contIndex);
                         
@@ -146,7 +303,7 @@ void saveFile(string filename, string fileContent){
     sHDIndex = to_string(fileContSize);
                         
     sHDSize = sHDIndex.size(); 
-    
+
     aux = 0;
     
     for(int j = 12 + (4 - sHDSize); j < 16; j++){
@@ -181,12 +338,14 @@ void saveFile(string filename, string fileContent){
     	    	
 		memDir[contIndex][0] = '1';
 
-        if(i == (fileContent.size()/23)){
+		int auxIndex = nextLine();
+
+        if(i == (fileContent.size()/24)){
             for(int k = 4; k < 8; k++){
                 memDir[contIndex][k] = '0';
             }
         } else {
-            string sIndex = to_string(contIndex+1);
+            string sIndex = to_string(auxIndex);
                         
             int sSize = sIndex.size();
             
@@ -216,9 +375,8 @@ void saveFile(string filename, string fileContent){
         }
         contIndex = nextLine();
     }
-
     saveMemDir();
-
+	cout<< "Arquivo " << filename << " criado com " << fileContent.size() << " Bytes"<<'\n';
 }
 
 void saveMemDir(){
@@ -268,8 +426,6 @@ void removeFile(string input){
     int lineIndex;
 
     for(int i = 0; i < 20; i++){
-        cout << "memDir[" << i << "][0] => " << memDir[i][0] << " | ";
-        cout << "memDir[" << i << "][2] => " << memDir[i][2] << '\n';
         if(memDir[i][0] == '1' && memDir[i][2] == '0'){
             
             string aux;
@@ -297,12 +453,7 @@ void removeFile(string input){
                         aux.push_back(memDir[i][j]);
                     }
 
-                    cout << "fileName => " << fileName << " | ";
-                    cout << "aux -> " << aux << '\n';
-
                     lineIndex = stoi(aux);
-
-                    cout << "lineIndex => " << lineIndex << '\n';
 
                     break;
                 }
@@ -311,7 +462,6 @@ void removeFile(string input){
     }
 
     if(fileExists){
-        cout<<"calling removeFileContent(lineIndex)"<<'\n';
         removeFileContent(lineIndex);
         saveMemDir();
     } else {
@@ -323,10 +473,7 @@ void removeFileContent(int contentIndex){
     
     if(contentIndex == 0){
 
-        memDir[contentIndex][0] = '0';
-
     } else {
-
         int nextLineIndex;
 
         string aux;
