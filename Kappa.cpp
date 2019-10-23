@@ -12,6 +12,7 @@ string currDir = "# ";
 fstream dir;
 char memDir[1024][33];
 vector<int> dirStack{0};
+string memFile;
 
 // --------------- functions declarations
 
@@ -31,8 +32,10 @@ void changeDir(string input);
 void mountDirPointer(int pathIndex);
 void backDir();
 void showDir();
+void printFile(string input);
+void getFileContent(int contentIndex);
 
-// ---------------
+// ---------------k
 
 int main() {
 
@@ -57,8 +60,115 @@ int main() {
 			changeDir(input);
 		} else if(input.find("dir") == 0){
 			showDir();
+		} else if(input.find("type ") == 0){
+			printFile(input);
 		}
 	}
+}
+
+void printFile(string input){
+
+    string name = input.replace(0, 5, "");
+
+    for(int i = 0; i < 20; i++){
+        if(memDir[i][0] == '1' && memDir[i][2] == '0'){
+            
+            string aux;
+
+            int j = 16;
+
+            while(memDir[i][j] != ' ' && j < 32){
+
+                aux.push_back(memDir[i][j]);
+
+                j++;
+
+            }
+
+            if(aux.size() > 0){
+                if(name.compare(aux) == 0){
+
+                    aux.clear();
+
+					for (int k = 8; k < 12; k++){
+                        aux.push_back(memDir[i][k]);
+                    }
+
+
+                    int firstIndex = stoi(aux);
+
+                    getFileContent(firstIndex);
+
+                    for (int k = 0; k < memFile.size(); k++){
+                        if (k%20 == 0 && k != 0){
+                            cout << '\n' << memFile[k];
+                        } else {
+                            cout << memFile[k];
+                        }
+                    }
+                    cout << endl;
+
+                    memFile.clear();
+                }
+            }
+        }
+    }
+}
+
+void getFileContent(int contentIndex){
+
+
+    if(contentIndex == 0){
+
+    } else {
+        int nextLineIndex;
+
+        string aux;
+
+        aux.clear();
+
+        int j = 8;
+
+        while(memDir[contentIndex][j] != ' ' && j < 32){
+
+            memFile.push_back(memDir[contentIndex][j]);
+
+            j++;
+
+        }
+
+        for(int j = 4; j < 8; j++){
+            aux.push_back(memDir[contentIndex][j]);
+        }
+
+        nextLineIndex = stoi(aux);
+
+        getFileContent(nextLineIndex);
+    }
+
+}
+
+void removeFileContent(int contentIndex){
+    
+    if(contentIndex == 0){
+
+    } else {
+        int nextLineIndex;
+
+        string aux;
+
+        memDir[contentIndex][0] = '0';
+
+        aux.clear();
+
+        for(int j = 4; j < 8; j++){
+            aux.push_back(memDir[contentIndex][j]);
+        }
+
+        nextLineIndex = stoi(aux);
+
+        removeFileContent(nextLineIndex);
+    }
 }
 
 void showDir(){
@@ -461,6 +571,7 @@ int nextHDSlot(){
 
 int nextLine(){
     int index;
+
     for(int i = 20; i < 1024; i++ ){
         if(memDir[i][0] == '0'){
             index = i;
@@ -523,25 +634,3 @@ void removeFile(string input){
     }
 }
 
-void removeFileContent(int contentIndex){
-    
-    if(contentIndex == 0){
-
-    } else {
-        int nextLineIndex;
-
-        string aux;
-
-        memDir[contentIndex][0] = '0';
-
-        aux.clear();
-
-        for(int j = 4; j < 8; j++){
-            aux.push_back(memDir[contentIndex][j]);
-        }
-
-        nextLineIndex = stoi(aux);
-
-        removeFileContent(nextLineIndex);
-    }
-}
