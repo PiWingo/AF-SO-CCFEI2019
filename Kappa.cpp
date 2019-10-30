@@ -34,10 +34,14 @@ void backDir();
 void showDir();
 void printFile(string input);
 void getFileContent(int contentIndex);
+void copy(string input);
+vector<string> split(string targetString, string delimiter);
 
-// ---------------k
+// ---------------
 
 int main() {
+
+    string w = "";
 
 	string input;
 	while(input != "exit"){
@@ -62,8 +66,14 @@ int main() {
 			showDir();
 		} else if(input.find("type ") == 0){
 			printFile(input);
-		}
+		} else if(input.find("copy ") == 0){
+
+        }
 	}
+}
+
+void copy(string input){
+
 }
 
 void printFile(string input){
@@ -634,3 +644,21 @@ void removeFile(string input){
     }
 }
 
+vector<string> split(string targetString, string delimiter){
+
+    vector<string> result;
+
+    string s = targetString;
+    string delim = delimiter;
+
+    size_t pos = 0;
+    string token;
+    while ((pos = s.find(delim)) != std::string::npos) {
+        token = s.substr(0, pos);
+        result.push_back(token);
+        s.erase(0, pos + delim.length());
+    }
+    result.push_back(s);
+
+    return result;
+}
