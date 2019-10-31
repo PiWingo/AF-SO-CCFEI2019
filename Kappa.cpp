@@ -41,8 +41,6 @@ vector<string> split(string targetString, string delimiter);
 
 int main() {
 
-    string w = "";
-
 	string input;
 	while(input != "exit"){
 		cout << currDir;
@@ -67,13 +65,128 @@ int main() {
 		} else if(input.find("type ") == 0){
 			printFile(input);
 		} else if(input.find("copy ") == 0){
-
+            copy(input);
         }
 	}
 }
 
 void copy(string input){
 
+    string fullCommand = input.replace(0, 5, "");
+
+    vector<string> auxCommands = split(fullCommand, " ");
+
+    string fileToCopy = auxCommands[0];
+    
+    vector<string> pasteLocation = split(auxCommands[1], "\\");
+
+    if (pasteLocation.size() == 1){
+
+        string newFile = pasteLocation[pasteLocation.size()-1];
+
+        bool fileExists = false;
+        int lineIndex;
+
+        for(int i = 0; i < 20; i++){
+            if(memDir[i][0] == '1' && memDir[i][2] == '0'){
+                
+                string aux;
+
+                int j = 16;
+
+                while(memDir[i][j] != ' ' && j < 32){
+
+                    aux.push_back(memDir[i][j]);
+
+                    j++;
+
+                }
+                
+                if(aux.size() > 0){
+                    if(fileToCopy.compare(aux) == 0){
+
+                        fileExists = true;
+
+                        aux.clear();
+
+                        for(j = 8; j < 12; j++){
+                            aux.push_back(memDir[i][j]);
+                        }
+
+                        cout<< memFile << endl;
+                        lineIndex = stoi(aux);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (fileExists){
+            getFileContent(lineIndex);
+            saveFile(newFile, memFile);
+
+            cout<< fileToCopy << " copiado." << endl;
+            memFile.clear();
+        }
+        
+    } else if (pasteLocation.size() >= 2){
+        string newFile = pasteLocation[pasteLocation.size()-1];
+        string fileDir = pasteLocation[pasteLocation.size()-2];
+
+        fileDir = "cd " + fileDir;
+
+        changeDir(fileDir);
+
+        bool fileExists = false;
+
+        int lineIndex;
+
+        for(int i = 0; i < 20; i++){
+            if(memDir[i][0] == '1' && memDir[i][2] == '0'){
+                
+                string aux;
+
+                int j = 16;
+
+                while(memDir[i][j] != ' ' && j < 32){
+
+                    aux.push_back(memDir[i][j]);
+
+                    j++;
+
+                }
+
+                if(aux.size() > 0){
+                    if(fileToCopy.compare(aux) == 0){
+
+                        fileExists = true;
+
+                        aux.clear();
+
+                        for(j = 8; j < 12; j++){
+                            aux.push_back(memDir[i][j]);
+                        }
+
+                        lineIndex = stoi(aux);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (fileExists){
+
+            getFileContent(lineIndex);
+            saveFile(newFile, memFile);
+
+            cout<< fileToCopy << " copiado." << endl;
+            memFile.clear();
+        }
+        
+        backDir();
+    }
 }
 
 void printFile(string input){
